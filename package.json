@@ -1,0 +1,17 @@
+{
+  "name": "autobot",
+  "version": "1.0.0",
+  "description": "Телеграм-бот для сбора заявок на подбор автомобиля.",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "telegraf": "^4.16.3"
+  }
+}
