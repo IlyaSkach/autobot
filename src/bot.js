@@ -18,6 +18,7 @@ const MENU = {
   faq: "❓ Вопросы и ответы",
   manager: "✉️ Написать менеджеру",
 };
+const CANCEL_BUTTON = "❌ Отмена";
 
 const CONTACT_OPTIONS = [
   { title: "Телефон", value: "phone" },
@@ -206,9 +207,26 @@ function mainMenu() {
 }
 
 function contactOptionsKeyboard() {
-  return Markup.keyboard(CONTACT_OPTIONS.map((option) => option.title))
-    .oneTime()
-    .resize();
+  const rows = CONTACT_OPTIONS.map((option) => [option.title]);
+  rows.push([CANCEL_BUTTON]);
+  return Markup.keyboard(rows).resize();
+}
+
+function wizardKeyboard() {
+  return Markup.keyboard([
+    [MENU.request, MENU.about],
+    [MENU.faq, MENU.manager],
+    [CANCEL_BUTTON],
+  ]).resize();
+}
+
+function isCancelInput(text) {
+  return text?.trim().toLowerCase() === CANCEL_BUTTON.toLowerCase();
+}
+
+async function handleCancel(ctx) {
+  await ctx.reply("Заполнение отменено. Выберите действие из меню.", mainMenu());
+  return ctx.scene.leave();
 }
 
 function validateBudget(input) {
@@ -233,12 +251,15 @@ const requestWizard = new Scenes.WizardScene(
     };
     await ctx.reply(
       "Введите марку и модель интересующего автомобиля:",
-      Markup.removeKeyboard()
+      wizardKeyboard()
     );
     return ctx.wizard.next();
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text) {
       await ctx.reply(
         "Пожалуйста, отправьте текстовое сообщение с маркой и моделью."
@@ -246,11 +267,17 @@ const requestWizard = new Scenes.WizardScene(
       return;
     }
     ctx.wizard.state.form.car = text;
-    await ctx.reply("Укажите желаемый бюджет (например, 2 500 000 ₽):");
+    await ctx.reply(
+      "Укажите желаемый бюджет (например, 2 500 000 ₽):",
+      wizardKeyboard()
+    );
     return ctx.wizard.next();
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text || !validateBudget(text)) {
       await ctx.reply(
         "Пожалуйста, введите бюджет в свободной форме, например: 2 500 000 ₽"
@@ -258,31 +285,40 @@ const requestWizard = new Scenes.WizardScene(
       return;
     }
     ctx.wizard.state.form.budget = text;
-    await ctx.reply("В какой город нужно доставить автомобиль?");
+    await ctx.reply("В какой город нужно доставить автомобиль?", wizardKeyboard());
     return ctx.wizard.next();
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text) {
       await ctx.reply("Укажите, пожалуйста, город доставки.");
       return;
     }
     ctx.wizard.state.form.deliveryCity = text;
-    await ctx.reply("Как вас зовут?");
+    await ctx.reply("Как вас зовут?", wizardKeyboard());
     return ctx.wizard.next();
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text) {
       await ctx.reply("Пожалуйста, укажите ваше имя.");
       return;
     }
     ctx.wizard.state.form.fullName = text;
-    await ctx.reply("Оставьте номер телефона для связи:");
+    await ctx.reply("Оставьте номер телефона для связи:", wizardKeyboard());
     return ctx.wizard.next();
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text || !validatePhone(text)) {
       await ctx.reply(
         "Введите номер телефона (можно в международном формате, например +7 999 123-45-67)."
@@ -290,11 +326,14 @@ const requestWizard = new Scenes.WizardScene(
       return;
     }
     ctx.wizard.state.form.phone = text;
-    await ctx.reply("Укажите электронную почту:");
+    await ctx.reply("Укажите электронную почту:", wizardKeyboard());
     return ctx.wizard.next();
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text || !validateEmail(text)) {
       await ctx.reply(
         "Введите корректный адрес электронной почты (пример: name@example.com)."
@@ -310,6 +349,9 @@ const requestWizard = new Scenes.WizardScene(
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text) {
       await ctx.reply(
         "Пожалуйста, выберите один из вариантов: Телефон, What's App или Telegram."
@@ -359,12 +401,15 @@ const managerWizard = new Scenes.WizardScene(
     };
     await ctx.reply(
       "Опишите ваш вопрос или сообщение для менеджера:",
-      Markup.removeKeyboard()
+      wizardKeyboard()
     );
     return ctx.wizard.next();
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text) {
       await ctx.reply("Пожалуйста, отправьте текстовое сообщение.");
       return;
@@ -378,6 +423,9 @@ const managerWizard = new Scenes.WizardScene(
   },
   async (ctx) => {
     const text = ctx.message?.text?.trim();
+    if (isCancelInput(text)) {
+      return handleCancel(ctx);
+    }
     if (!text) {
       await ctx.reply(
         "Используйте кнопки на клавиатуре: Телефон, What's App или Telegram."
