@@ -231,7 +231,10 @@ const requestWizard = new Scenes.WizardScene(
       userId: ctx.from?.id ?? null,
       username: ctx.from?.username ?? null,
     };
-    await ctx.reply("Введите марку и модель интересующего автомобиля:");
+    await ctx.reply(
+      "Введите марку и модель интересующего автомобиля:",
+      Markup.removeKeyboard()
+    );
     return ctx.wizard.next();
   },
   async (ctx) => {
@@ -354,7 +357,10 @@ const managerWizard = new Scenes.WizardScene(
       userId: ctx.from?.id ?? null,
       username: ctx.from?.username ?? null,
     };
-    await ctx.reply("Опишите ваш вопрос или сообщение для менеджера:");
+    await ctx.reply(
+      "Опишите ваш вопрос или сообщение для менеджера:",
+      Markup.removeKeyboard()
+    );
     return ctx.wizard.next();
   },
   async (ctx) => {
